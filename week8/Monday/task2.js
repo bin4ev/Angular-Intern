@@ -20,5 +20,5 @@ function task2(str) {
   }
   
   let a = task2("alabala");
-  console.log(a); // "alabala" => 3
+  console.log(a); // "alabala" => 2
   
