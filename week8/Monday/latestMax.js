@@ -15,7 +15,6 @@ class LatestMax {
             this.add = this.addNext
             return this.add(n)
         }
-
     }
 
     addNext(n) {

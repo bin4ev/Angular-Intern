@@ -30,15 +30,11 @@ class Largest {
 
 let res;
 let data = new Largest(3);
-res = data.add(0); // undefined
-res = data.add(2); // undefined
-res = data.add(1); // 0 */
+res = data.add(0); // 
+res = data.add(2); // 
+res = data.add(1); // 
  res = data.add(8); //
-res = data.add(3); // 0
+res = data.add(3); // 
 res = data.add(1);
 res = data.add(2);
-
-// 0 */
-// 1
-
 console.log(res);
