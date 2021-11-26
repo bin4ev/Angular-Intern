@@ -2,68 +2,225 @@ class Table {
   constructor(config, data) {
     this.data = data
     this.config = config
-    this.createTable(config.columns, data)
+    this.createTable()
+    this.pagination()
   }
 
-  showHeader(t) {
-    let title = 'Title'
+  createTable() {
+    let table = document.createElement("table");
+
     if (this.config.showHeader) {
-      let cap = document.createElement("caption");
-      cap.textContent = title
-      t.appendChild(cap)
+      let tr = document.createElement("tr");
+      table.appendChild(tr);
+
+
+      for (let obj of this.config.columns) {
+        let tHeadEl = document.createElement("th");
+        if (obj.headerClass) {
+          tHeadEl.classList.add(obj.headerClass)
+        }
+        tHeadEl.textContent = obj.name
+        tr.appendChild(tHeadEl);
+      }
     }
+
+    for (let i = 0; i < this.config.rows; i++) {
+      let tr = document.createElement("tr");
+      this.onSelect(tr)
+      table.appendChild(tr);
+
+      for (let j = 0; j < this.config.columns.length; j++) {
+        let c = this.config.columns[j]
+        let td = document.createElement("td");
+        if (c.cellClass) {
+          td.classList.add(c.cellClass)
+        }
+        //to do format
+        td.textContent = this.data[i] ? this.data[i][c.property] : ''
+        tr.appendChild(td);
+      }
+    }
+    document.body.appendChild(table)
   }
 
   onSelect(node) {
     if (!this.config.canSelect) {
-      node.style.display = 'none'
       return
     }
 
-    node.classList.add(this.config.selectedRowClass)
     node.addEventListener('click', () => {
-      this.config.onselect(node) //ask node or target
+      let selectedEL = document.querySelector(`.${this.config.selectedRowClass}`)
+      if (selectedEL) {
+        selectedEL.classList.remove(this.config.selectedRowClass);
+      }
+      if (this.config.selectedRowClass) {
+        node.classList.add(this.config.selectedRowClass)
+      }
+      if (this.config.onselect) {
+        this.config.onselect(node)
+      }
     })
   }
 
-  createTable(col, data) {
-    let table = document.createElement("table");
-    this.showHeader(table)
-    let tr = document.createElement("tr");
-    table.appendChild(tr);
+  pagination() {
+    let btnPrev = document.createElement('button')
+    let btnNext = document.createElement('button')
+    btnPrev.textContent = 'Prev'
+    btnNext.textContent = 'Next'
+    let start = 1, end = this.config.rows
 
-    for (let obj of col) {
-      let tHeadEl = document.createElement("th");
-      tHeadEl.classList.add(obj.headerClass)
-      tHeadEl.textContent = obj.name
-      tr.appendChild(tHeadEl);
-    }
-
-    for (let el of data) {
-      let tr = document.createElement("tr");
-      this.onSelect(tr)
-
-      for (let c of col) {
-        let td = document.createElement("td");
-        td.classList.add(c.cellClass)
-        td.textContent = c.textFn(el[c.property])
-        tr.appendChild(td);
+    btnPrev.addEventListener('click', () => {
+      if (start == 1) {
+        return
       }
 
-      table.appendChild(tr);
-      this.config.rows--
-    }
+      start -= this.config.rows, end -= this.config.rows
+      let tdArr = document.querySelectorAll('tr ~ tr')
+      let j = 0
+      let i = start
+      for (; i < end; i++, j++) {
+        let elObj = this.data[i]
+        let row = tdArr[j].children
+        for (let k = 0; k < row.length; k++) {
+          let td = row[k]
+          let c = this.config.columns[k]
+          td.textContent = elObj[c.property]
+        }
+      }
+      totalRows.textContent = `${start}-${end} of ${this.data.length}`
+    })
 
-    while (this.config.rows > 0) {
-      let tr = document.createElement("tr");
-      let td = document.createElement("td");
-      tr.appendChild(td);
-      table.appendChild(tr);
-      this.config.rows--
-    }
-    document.body.appendChild(table);
+    btnNext.addEventListener('click', () => {
+      if (end >= this.data.length) {
+        return
+      }
+
+      start += this.config.rows, end += this.config.rows
+      if (end > this.data.length) {
+        end = this.data.length
+      }
+
+
+      let tdArr = document.querySelectorAll('tr ~ tr')
+      let j = 0
+      let i = start
+      for (; i < end; i++, j++) {
+        let elObj = this.data[i]
+        let row = tdArr[j].children
+        for (let k = 0; k < row.length; k++) {
+          let td = row[k]
+          let c = this.config.columns[k]
+          td.textContent = elObj[c.property]
+        }
+      }
+      totalRows.textContent = `${start}-${end} of ${this.data.length}`
+    })
+
+    window.addEventListener('keydown', (e) => {
+      e.preventDefault()
+      if (e.key == 'PageDown') {
+        if (start == 1) {
+          return
+        }
+      }
+      //make func
+      start -= this.config.rows, end -= this.config.rows
+      let tdArr = document.querySelectorAll('tr ~ tr')
+      let j = 0
+      let i = start
+      for (; i < end; i++, j++) {
+        let elObj = this.data[i]
+        let row = tdArr[j].children
+        for (let k = 0; k < row.length; k++) {
+          let td = row[k]
+          let c = this.config.columns[k]
+          td.textContent = elObj[c.property]
+        }
+      }
+      totalRows.textContent = `${start}-${end} of ${this.data.length}`
+    })
+
+    window.addEventListener('keydown', (e) => {
+      e.preventDefault()
+      if (e.key == 'PageUp') {
+        if (end >= this.data.length) {
+          return
+        }
+        //make func
+        start += this.config.rows, end += this.config.rows
+        if (start > this.data.length - this.config.rows) {
+          start = this.data.length - this.config.rows
+        }
+
+        let tdArr = document.querySelectorAll('tr ~ tr')
+        let j = 0
+        let i = start
+        for (; i < end; i++, j++) {
+          let elObj = this.data[i]
+          let row = tdArr[j].children
+          for (let k = 0; k < row.length; k++) {
+            let td = row[k]
+            let c = this.config.columns[k]
+            td.textContent = elObj[c.property]
+          }
+        }
+        totalRows.textContent = `${start}-${end} of ${this.data.length}`
+      }
+
+    })
+
+    window.addEventListener('keydown', (e) => {
+      e.preventDefault()
+      if (e.key == 'Home') {
+
+        //make func
+        start = 1, end = this.config.rows
+        let tdArr = document.querySelectorAll('tr ~ tr')
+        let j = 0
+        let i = start
+        for (; i < end; i++, j++) {
+          let elObj = this.data[i]
+          let row = tdArr[j].children
+          for (let k = 0; k < row.length; k++) {
+            let td = row[k]
+            let c = this.config.columns[k]
+            td.textContent = elObj[c.property]
+          }
+        }
+        totalRows.textContent = `${start}-${end} of ${this.data.length}`
+      }
+
+    })
+
+    window.addEventListener('keydown', (e) => {
+      e.preventDefault()
+      if (e.key == 'End') {
+
+        //make func
+        start = this.data.length - this.config.rows, end = this.data.length
+        let tdArr = document.querySelectorAll('tr ~ tr')
+        let j = 0
+        let i = start
+        for (; i < end; i++, j++) {
+          let elObj = this.data[i]
+          let row = tdArr[j].children
+          for (let k = 0; k < row.length; k++) {
+            let td = row[k]
+            let c = this.config.columns[k]
+            td.textContent = elObj[c.property]
+          }
+        }
+        totalRows.textContent = `${start + 1}-${end} of ${this.data.length}`
+      }
+
+    })
+
+    let totalRows = document.createElement('span')
+    totalRows.textContent = `${start}-${end} of ${this.data.length}`
+    document.body.appendChild(btnPrev)
+    document.body.appendChild(totalRows)
+    document.body.appendChild(btnNext)
   }
-
 }
 
 let describeColumns = [
@@ -90,17 +247,16 @@ let describeColumns = [
     headerClass: 'italic',
     cellClass: 'left',
     textFn: value => value.toUpperCase()
-  }
-
+  },
 ];
 
 let tableConfig = {
   'columns': describeColumns,
   'showHeader': true,
-  'rows': 16,
+  'rows': 10,
   'canSelect': true,
   'selectedRowClass': 'selected-row',
-  onselect: (data) => data.style.color = 'red'
+  onselect: (data) => console.log(data)
 }
 
 fetch('./data.json')
@@ -108,7 +264,7 @@ fetch('./data.json')
   .then(data => {
     let t = new Table(tableConfig, data)
   })
-  .catch(e=>console.log(e))
+  .catch(e => console.log(e))
 
 
 

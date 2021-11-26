@@ -1,6 +1,6 @@
 function getElements1(str) {
     function checkAllParent(node, tags) {
-        let lastIndex = tags.length - 2
+        let lastIndex = tags.length - 1
         while (lastIndex >= 0) {
             if (node.parentNode.nodeName != tags[lastIndex]) {
                 return false
@@ -10,30 +10,27 @@ function getElements1(str) {
             lastIndex--
         }
 
-        return true 
+        return true
     }
 
     function scan(node, tag, tags) {
-
-        for (let child of node.children ) {
-            if (tag == child.tagName) {
-                if (checkAllParent(child,tags)) {
-                    result.push(child)
-                }
+        for (let child of node.children) {
+            if (tag == child.tagName && checkAllParent(child, tags)) {
+                result.push(child)
             }
             scan(child, tag, tags)
         }
-
     }
 
     let result = []
     let tagsArr = str.split(' ').map(x => x.toUpperCase())
-    let targetEL = tagsArr[tagsArr.length - 1]
+    let targetEL = tagsArr.pop()
     scan(document.body, targetEL, tagsArr)
 
     return result
 }
-let b = getElements1('a')
+
+let b = getElements1('body  article p a')
 console.log(b);
 
 
