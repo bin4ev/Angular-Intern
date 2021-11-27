@@ -1,6 +1,6 @@
 [
   {
-    "first-name": "Иван",
+    "first-name": "First",
     "last-name": "Иванов",
     "age": "22",
     "city": "Перник",
@@ -424,130 +424,7 @@
     "has-certificate": "true"
   },
   {
-    "first-name": "Димитър",
-    "last-name": "Дамянов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Стамат",
-    "last-name": "Петров",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },  {
-    "first-name": "Иван",
-    "last-name": "Иванов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Димитър",
-    "last-name": "Дамянов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Стамат",
-    "last-name": "Петров",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },  {
-    "first-name": "Иван",
-    "last-name": "Иванов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Димитър",
-    "last-name": "Дамянов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Стамат",
-    "last-name": "Петров",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },  {
-    "first-name": "Иван",
-    "last-name": "Иванов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Димитър",
-    "last-name": "Дамянов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Стамат",
-    "last-name": "Петров",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },  {
-    "first-name": "Иван",
-    "last-name": "Иванов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Димитър",
-    "last-name": "Дамянов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Стамат",
-    "last-name": "Петров",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },  {
-    "first-name": "Иван",
-    "last-name": "Иванов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Димитър",
-    "last-name": "Дамянов",
-    "age": "22",
-    "city": "Перник",
-    "payment": "222.0",
-    "has-certificate": "true"
-  },
-  {
-    "first-name": "Стамат",
+    "first-name": "last",
     "last-name": "Петров",
     "age": "22",
     "city": "Перник",

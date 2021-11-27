@@ -6,13 +6,10 @@ class Table {
     this.pagination()
   }
 
-  createTable() {
-    let table = document.createElement("table");
-
+  createHead(table) {
     if (this.config.showHeader) {
       let tr = document.createElement("tr");
       table.appendChild(tr);
-
 
       for (let obj of this.config.columns) {
         let tHeadEl = document.createElement("th");
@@ -23,7 +20,9 @@ class Table {
         tr.appendChild(tHeadEl);
       }
     }
+  }
 
+  createBody(table) {
     for (let i = 0; i < this.config.rows; i++) {
       let tr = document.createElement("tr");
       this.onSelect(tr)
@@ -40,7 +39,23 @@ class Table {
         tr.appendChild(td);
       }
     }
+  }
+
+  createTable() {
+    let table = document.createElement("table");
+    this.createHead(table)
+    this.createBody(table)
     document.body.appendChild(table)
+  }
+
+  removeClass(className) {
+    let selectedEL = document.querySelectorAll(`.${className}`)
+    if (selectedEL) {
+      for (let n of selectedEL)
+        n.classList.remove(className);
+    }
+
+    return selectedEL
   }
 
   onSelect(node) {
@@ -48,17 +63,30 @@ class Table {
       return
     }
 
-    node.addEventListener('click', () => {
-      let selectedEL = document.querySelector(`.${this.config.selectedRowClass}`)
-      if (selectedEL) {
-        selectedEL.classList.remove(this.config.selectedRowClass);
-      }
-      if (this.config.selectedRowClass) {
-        node.classList.add(this.config.selectedRowClass)
+    node.addEventListener('click', (e) => {
+      let className = this.config.selectedRowClass
+      this.removeClass(className)
+
+      if (className) {
+        node.classList.add(className)
       }
       if (this.config.onselect) {
         this.config.onselect(node)
       }
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key == 'ArrowUp') {
+          let targetEl = this.removeClass(className)
+          targetEl[0].previousSibling.classList.add(className)
+        }
+      })
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key == 'ArrowDown') {
+          let targetEl = this.removeClass(className)
+          targetEl[0].nextSibling.classList.add(className)
+        }
+      })
     })
   }
 
@@ -67,156 +95,89 @@ class Table {
     let btnNext = document.createElement('button')
     btnPrev.textContent = 'Prev'
     btnNext.textContent = 'Next'
-    let start = 1, end = this.config.rows
+    let start = 0, end = this.config.rows
+    let data = this.data
+    let config = this.config
 
-    btnPrev.addEventListener('click', () => {
-      if (start == 1) {
-        return
-      }
-
-      start -= this.config.rows, end -= this.config.rows
-      let tdArr = document.querySelectorAll('tr ~ tr')
-      let j = 0
-      let i = start
-      for (; i < end; i++, j++) {
-        let elObj = this.data[i]
-        let row = tdArr[j].children
-        for (let k = 0; k < row.length; k++) {
-          let td = row[k]
-          let c = this.config.columns[k]
-          td.textContent = elObj[c.property]
-        }
-      }
-      totalRows.textContent = `${start}-${end} of ${this.data.length}`
-    })
-
-    btnNext.addEventListener('click', () => {
-      if (end >= this.data.length) {
-        return
-      }
-
-      start += this.config.rows, end += this.config.rows
-      if (end > this.data.length) {
-        end = this.data.length
-      }
-
-
-      let tdArr = document.querySelectorAll('tr ~ tr')
-      let j = 0
-      let i = start
-      for (; i < end; i++, j++) {
-        let elObj = this.data[i]
-        let row = tdArr[j].children
-        for (let k = 0; k < row.length; k++) {
-          let td = row[k]
-          let c = this.config.columns[k]
-          td.textContent = elObj[c.property]
-        }
-      }
-      totalRows.textContent = `${start}-${end} of ${this.data.length}`
-    })
+    btnPrev.addEventListener('click', prevPege)
+    btnNext.addEventListener('click', () => { nextPage(start, end) })
 
     window.addEventListener('keydown', (e) => {
       e.preventDefault()
       if (e.key == 'PageDown') {
-        if (start == 1) {
-          return
-        }
+        prevPege()
       }
-      //make func
-      start -= this.config.rows, end -= this.config.rows
-      let tdArr = document.querySelectorAll('tr ~ tr')
-      let j = 0
-      let i = start
-      for (; i < end; i++, j++) {
-        let elObj = this.data[i]
-        let row = tdArr[j].children
-        for (let k = 0; k < row.length; k++) {
-          let td = row[k]
-          let c = this.config.columns[k]
-          td.textContent = elObj[c.property]
-        }
-      }
-      totalRows.textContent = `${start}-${end} of ${this.data.length}`
     })
 
     window.addEventListener('keydown', (e) => {
       e.preventDefault()
       if (e.key == 'PageUp') {
-        if (end >= this.data.length) {
-          return
-        }
-        //make func
-        start += this.config.rows, end += this.config.rows
-        if (start > this.data.length - this.config.rows) {
-          start = this.data.length - this.config.rows
-        }
-
-        let tdArr = document.querySelectorAll('tr ~ tr')
-        let j = 0
-        let i = start
-        for (; i < end; i++, j++) {
-          let elObj = this.data[i]
-          let row = tdArr[j].children
-          for (let k = 0; k < row.length; k++) {
-            let td = row[k]
-            let c = this.config.columns[k]
-            td.textContent = elObj[c.property]
-          }
-        }
-        totalRows.textContent = `${start}-${end} of ${this.data.length}`
+        nextPage(start, end)
       }
-
     })
 
     window.addEventListener('keydown', (e) => {
       e.preventDefault()
       if (e.key == 'Home') {
-
-        //make func
-        start = 1, end = this.config.rows
-        let tdArr = document.querySelectorAll('tr ~ tr')
-        let j = 0
-        let i = start
-        for (; i < end; i++, j++) {
-          let elObj = this.data[i]
-          let row = tdArr[j].children
-          for (let k = 0; k < row.length; k++) {
-            let td = row[k]
-            let c = this.config.columns[k]
-            td.textContent = elObj[c.property]
-          }
-        }
-        totalRows.textContent = `${start}-${end} of ${this.data.length}`
+        exactPage(0, config.rows)
       }
-
     })
 
     window.addEventListener('keydown', (e) => {
       e.preventDefault()
       if (e.key == 'End') {
-
-        //make func
-        start = this.data.length - this.config.rows, end = this.data.length
-        let tdArr = document.querySelectorAll('tr ~ tr')
-        let j = 0
-        let i = start
-        for (; i < end; i++, j++) {
-          let elObj = this.data[i]
-          let row = tdArr[j].children
-          for (let k = 0; k < row.length; k++) {
-            let td = row[k]
-            let c = this.config.columns[k]
-            td.textContent = elObj[c.property]
-          }
-        }
-        totalRows.textContent = `${start + 1}-${end} of ${this.data.length}`
+        let end = Math.round(this.data.length / this.config.rows) * this.config.rows
+        let start = end - this.config.rows
+        exactPage(start, end)
       }
-
     })
 
+    function nextPage(begin, ending) {
+      if (ending > data.length - 1) {
+        return
+      }
+
+      begin += config.rows, ending += config.rows
+      fillRows(begin, ending)
+      if (ending)
+        totalRows.textContent = `${begin + 1}-${ending} of ${data.length}`
+      start = begin, end = ending
+    }
+
+    function prevPege() {
+      if (start < 1) {
+        return
+      }
+
+      start -= config.rows, end -= config.rows
+      fillRows(start, end)
+      totalRows.textContent = `${start + 1}-${end} of ${data.length}`
+    }
+
+    function exactPage(begin, ending) {
+      fillRows(begin, ending)
+      totalRows.textContent = `${begin + 1}-${ending} of ${data.length}`
+      start = begin, end = ending
+    }
+
+    function fillRows(start, end) {
+      let tdArr = document.querySelectorAll('tr ~ tr')
+      let j = 0
+      let i = start
+      for (; i < end; i++, j++) {
+        let dataObj = data[i]
+        let row = tdArr[j].children
+        for (let k = 0; k < row.length; k++) {
+          let td = row[k]
+          let c = config.columns[k]
+
+          td.textContent = data[i] ? dataObj[c.property] : ''
+        }
+      }
+    }
+
     let totalRows = document.createElement('span')
-    totalRows.textContent = `${start}-${end} of ${this.data.length}`
+    totalRows.textContent = `${start + 1}-${end} of ${this.data.length}`
     document.body.appendChild(btnPrev)
     document.body.appendChild(totalRows)
     document.body.appendChild(btnNext)
