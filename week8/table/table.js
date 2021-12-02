@@ -1,7 +1,15 @@
 class Table {
   constructor(config, data) {
-    this.data = data
     this.config = config
+    this.data = data
+    this.start = 0
+    this.end = this.config.rows
+    this.totalRows = document.createElement('span')
+    this.selected
+    this.length = 0
+    this.countPage = 1
+    this.increaseData = true
+    this.valueClass
     this.createTable()
     this.pagination()
   }
@@ -22,10 +30,12 @@ class Table {
     }
   }
 
-  createBody(table) {
+  createTableRows(table) {
     for (let i = 0; i < this.config.rows; i++) {
       let tr = document.createElement("tr");
-      this.onSelect(tr)
+      if (this.config.canSelect) {
+        this.InitSelect(tr)
+      }
       table.appendChild(tr);
 
       for (let j = 0; j < this.config.columns.length; j++) {
@@ -34,181 +44,277 @@ class Table {
         if (c.cellClass) {
           td.classList.add(c.cellClass)
         }
-        //to do format
-        td.textContent = this.data[i] ? this.data[i][c.property] : ''
         tr.appendChild(td);
       }
     }
   }
 
   createTable() {
+    let wrapTable = document.createElement('div')
+    wrapTable.classList.add('wrap-table')
     let table = document.createElement("table");
     this.createHead(table)
-    this.createBody(table)
-    document.body.appendChild(table)
+    this.createTableRows(table)
+    wrapTable.appendChild(table)
+    document.body.appendChild(wrapTable)
+    this.fillRows()
   }
 
   removeClass(className) {
-    let selectedEL = document.querySelectorAll(`.${className}`)
-    if (selectedEL) {
-      for (let n of selectedEL)
-        n.classList.remove(className);
+    if (this.selected) {
+      this.selected.classList.remove(className);
     }
-
-    return selectedEL
   }
 
-  onSelect(node) {
-    if (!this.config.canSelect) {
+  select(target, className) {
+    this.removeClass(className)
+    this.selected = target
+    if (className) {
+      this.selected.classList.add(className)
+    }
+  }
+
+  initKeyEvent(className) {
+    window.addEventListener('keydown', (e) => {
+      let parent = this.selected.parentNode
+      let prevSel = this.selected.previousSibling
+      let nextSel = this.selected.nextSibling
+      if (nextSel == parent.lastChild) {
+
+      }
+      switch (e.key) {
+        case 'ArrowUp':
+          if (prevSel != parent.firstChild) {
+            this.select(prevSel, className)
+          }
+          break;
+        case 'ArrowDown': //do for last node
+          this.select(nextSel, className)
+          break;
+        default:
+          break;
+      }
+    })
+  }
+
+  InitSelect(node) {
+    let className = this.config.selectedRowClass
+    node.addEventListener('click', (e) => {
+      this.select(e.target.parentNode, className)
+      this.initKeyEvent(className)
+
+      if (this.config.onselect) {
+        this.config.onselect(e.target.textContent)
+      }
+    })
+  }
+
+  nextPage() {
+    let btns = document.querySelectorAll('button')
+    if (this.end > this.length) {
+      let btn = btns[1]
+      btn.classList.add('disable')
+      btn.disabled = true
       return
+    }                               //do func
+    let btn = btns[0]
+    if (btn.disabled) {
+      btn.disabled = false
+      btn.classList.remove('disable')
+    }
+    this.increaseData = true
+    this.countPage++
+    this.start += this.config.rows
+    this.end += this.config.rows
+    this.fillRows()
+  }
+
+  prevPege() {
+    let btns = document.querySelectorAll('button')
+    if (this.start <= 1) {
+      let btn = btns[0]
+      btn.classList.add('disable')
+      btn.disabled = true
+      return
+    }                                   //do func
+
+    if (btns[1].disabled) {
+      btns[1].disabled = false
+      btns[1].classList.remove('disable')
+    }
+    this.increaseData = false
+    this.countPage--
+    this.start -= this.config.rows, this.end -= this.config.rows
+    this.fillRows()
+  }
+
+  formarNum(val) {
+
+  }
+
+  formatValue(c, val) {
+    if (c.textFn) {
+      return c.textFn(val)
     }
 
-    node.addEventListener('click', (e) => {
-      let className = this.config.selectedRowClass
-      this.removeClass(className)
+    if (c.format && c.format == 'num') {
+      return this.formatNum(val)
+    }
 
-      if (className) {
-        node.classList.add(className)
+    return val || ''
+  }
+
+  addValueClass(c, td, dataObj) {
+    let val = dataObj[c.property]
+    let valueClass = c.valueClass(val)
+    if (valueClass) {
+      td.classList.add(valueClass)
+    } else {
+      td.classList.remove(this.valueClass) //clear all  add default
+    }
+  }
+
+  fill(data) {
+    let tdArr = document.querySelectorAll('tr ~ tr')
+
+    for (let i = 0; i < tdArr.length; i++) {
+      let dataObj = data[i]
+      if(dataObj){
+        //fillEmpty
       }
-      if (this.config.onselect) {
-        this.config.onselect(node)
+      if (dataObj && this.increaseData) {
+        this.length++
       }
+      let row = tdArr[i].children
 
-      window.addEventListener('keydown', (e) => {
-        if (e.key == 'ArrowUp') {
-          let targetEl = this.removeClass(className)
-          targetEl[0].previousSibling.classList.add(className)
+      for (let k = 0; k < row.length; k++) {
+        let td = row[k]
+        let c = this.config.columns[k]
+        if (c.valueClass) {
+          this.addValueClass(c, td, dataObj)
         }
-      })
+        let value = dataObj[c.property]
+        td.textContent = this.formatValue(c, value)
+      }
+    }
 
-      window.addEventListener('keydown', (e) => {
-        if (e.key == 'ArrowDown') {
-          let targetEl = this.removeClass(className)
-          targetEl[0].nextSibling.classList.add(className)
-        }
-      })
-    })
+    this.totalRows.textContent = `страница ${this.countPage}`
+  }
+
+  fillRows() {
+    if (typeof this.data == 'function') {
+      let result = this.data(this.start, this.end)
+      if (!(result instanceof Promise)) {
+        result = Promise.resolve(result)
+      }
+      result.then((data) => this.fill(data))
+    } else {
+      let d = this.data.slice(this.start, this.end)
+      this.fill(d)
+    }
   }
 
   pagination() {
     let btnPrev = document.createElement('button')
     let btnNext = document.createElement('button')
-    btnPrev.textContent = 'Prev'
-    btnNext.textContent = 'Next'
-    let start = 0, end = this.config.rows
-    let data = this.data
-    let config = this.config
-
-    btnPrev.addEventListener('click', prevPege)
-    btnNext.addEventListener('click', () => { nextPage(start, end) })
+    btnPrev.textContent = '<'
+    btnNext.textContent = '>'
+    
+    btnPrev.addEventListener('click', ()=>this.prevPege(this))
+    btnNext.addEventListener('click', ()=> this.nextPage(this))
 
     window.addEventListener('keydown', (e) => {
       e.preventDefault()
-      if (e.key == 'PageDown') {
-        prevPege()
+      switch (e.key) {
+        case 'PageDown':
+          this.prevPege()
+          break;
+        case 'PageUp':
+          this.nextPage()
+          break;
+        case 'Home':
+          this.start = 0
+          this.end = this.config.rows
+          this.countPage = 1
+          this.increaseData = false
+          this.fillRows()
+          break;
+        case 'End':
+          this.end = Math.ceil(this.length / this.config.rows) * this.config.rows
+          this.start = this.end - this.config.rows
+          this.countPage = Math.ceil(this.length / this.config.rows)
+          this.fillRows()
+          break;
+        default:
+          break;
       }
     })
 
-    window.addEventListener('keydown', (e) => {
-      e.preventDefault()
-      if (e.key == 'PageUp') {
-        nextPage(start, end)
-      }
-    })
-
-    window.addEventListener('keydown', (e) => {
-      e.preventDefault()
-      if (e.key == 'Home') {
-        exactPage(0, config.rows)
-      }
-    })
-
-    window.addEventListener('keydown', (e) => {
-      e.preventDefault()
-      if (e.key == 'End') {
-        let end = Math.round(this.data.length / this.config.rows) * this.config.rows
-        let start = end - this.config.rows
-        exactPage(start, end)
-      }
-    })
-
-    function nextPage(begin, ending) {
-      if (ending > data.length - 1) {
-        return
-      }
-
-      begin += config.rows, ending += config.rows
-      fillRows(begin, ending)
-      if (ending)
-        totalRows.textContent = `${begin + 1}-${ending} of ${data.length}`
-      start = begin, end = ending
-    }
-
-    function prevPege() {
-      if (start < 1) {
-        return
-      }
-
-      start -= config.rows, end -= config.rows
-      fillRows(start, end)
-      totalRows.textContent = `${start + 1}-${end} of ${data.length}`
-    }
-
-    function exactPage(begin, ending) {
-      fillRows(begin, ending)
-      totalRows.textContent = `${begin + 1}-${ending} of ${data.length}`
-      start = begin, end = ending
-    }
-
-    function fillRows(start, end) {
-      let tdArr = document.querySelectorAll('tr ~ tr')
-      let j = 0
-      let i = start
-      for (; i < end; i++, j++) {
-        let dataObj = data[i]
-        let row = tdArr[j].children
-        for (let k = 0; k < row.length; k++) {
-          let td = row[k]
-          let c = config.columns[k]
-
-          td.textContent = data[i] ? dataObj[c.property] : ''
-        }
-      }
-    }
-
-    let totalRows = document.createElement('span')
-    totalRows.textContent = `${start + 1}-${end} of ${this.data.length}`
-    document.body.appendChild(btnPrev)
-    document.body.appendChild(totalRows)
-    document.body.appendChild(btnNext)
+    let divWrap = document.querySelector('.wrap-table')
+    let btnWrap = document.createElement('div')
+    btnWrap.classList.add('btn-wrap')
+    btnWrap.appendChild(this.totalRows)
+    btnWrap.appendChild(btnPrev)
+    btnWrap.appendChild(btnNext)
+    divWrap.appendChild(btnWrap)
   }
 }
 
 let describeColumns = [
   {
-    property: "first-name",
-    name: "Име",
-    format: "num",
+    property: "number",
+    name: "№",
     headerClass: "bold",
     cellClass: "left",
     textFn: value => value.toUpperCase()
   },
   {
-    property: "last-name",
-    name: 'Фамилия',
-    format: 'num',
+    property: "unit",
+    name: "Стока",
+    headerClass: "bold",
+    cellClass: "left",
+    textFn: value => value.toUpperCase()
+  },
+  {
+    property: "code",
+    name: 'Код  ',
     headerClass: 'italic',
     cellClass: 'left',
     textFn: value => value.toUpperCase()
   },
   {
-    property: "age",
-    name: 'Възраст',
-    format: 'num',
+    property: "weight",
+    name: 'Везна',
     headerClass: 'italic',
     cellClass: 'left',
+    valueClass: val => val < 0 ? 'red' : undefined,
     textFn: value => value.toUpperCase()
   },
+  {
+    property: "time",
+    name: 'час',
+    headerClass: 'italic',
+    cellClass: 'left',
+    valueClass: val => val < 0 ? 'red' : undefined,
+    textFn: value => value.toUpperCase()
+  },
+  {
+    property: "price",
+    name: 'Цена',
+    headerClass: 'italic',
+    format: 'num',
+    cellClass: 'left',
+    valueClass: val => val < 0 ? 'red' : undefined,
+    textFn: value => value.toUpperCase()
+  },
+  {
+    property: "warehause",
+    name: 'Склад',
+    headerClass: 'italic',
+    cellClass: 'left',
+    valueClass: val => val < 0 ? 'red' : undefined,
+    textFn: value => value.toUpperCase()
+  }
 ];
 
 let tableConfig = {
@@ -217,13 +323,20 @@ let tableConfig = {
   'rows': 10,
   'canSelect': true,
   'selectedRowClass': 'selected-row',
-  onselect: (data) => console.log(data)
+  onselect: (data) => data.toUpperCase()
 }
 
-fetch('./data.json')
+
+fetch('./data1.json')
   .then(res => res.json())
   .then(data => {
-    let t = new Table(tableConfig, data)
+    function dataFunc(pos, count) {
+      let d = data.slice(pos, pos + count)
+      /*  return Promise.resolve(d) */
+      return d
+    }
+
+    let t = new Table(tableConfig, dataFunc)
   })
   .catch(e => console.log(e))
 
@@ -239,39 +352,4 @@ fetch('./data.json')
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// table1
-/* function createTable(arrPeople, colNames, col) {
-  let table = document.createElement("table");
-
-  for (let data of col) {
-    let tHeadEl = document.createElement("th");
-    tHeadEl.textContent = colNames[data]
-    table.appendChild(tHeadEl);
-  }
-
-  for (let person of arrPeople) {
-    let tr = document.createElement("tr");
-    for (let c of col) {
-      let td = document.createElement("td");
-      td.textContent = person[c]
-      tr.appendChild(td);
-      table.appendChild(tr);
-    }
-  }
-  document.body.appendChild(table);
-}
-
-createTable(people, columnNames, col);
- */
+/*     this.totalRows.textContent = `${this.start + 1} - ${this.end} of ${this.length}` */

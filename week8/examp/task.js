@@ -1,8 +1,6 @@
 class Calculator {
-    constructor(config, data) {
+    constructor() {
         this.result = 0
-        this.config = config
-        this.data = data
         this.firstNum
         this.secNum
         this.sign
@@ -30,82 +28,112 @@ class Calculator {
         return res
     }
 
-    reset() {
-        this.firstNum = 0
-        this.secNum = 0
-        this.sign = ''
+    reset(firstNum,secNum,sign) {
+        firstNum = 0
+        secNum = 0
+        sign = ''
     }
 
     cutString(str) {
         return str.substr(0, result.value.length - 1)
     }
 
+    addEvent(e) {
+        let val = e.target
+        let result = document.querySelector('span')
+        let calc = this.calculate
+        let first 
+        let sec
+        let sign
 
-
-    addEvent(node) {
-        node.addEventListener('click', (e) => {
-            let val = e.target
-            let result = document.querySelector('#result')
-
-
-            if (val.textContent == 'C') {
-                result.value = 0
-                this.reset(result)
-
-            } else if (val.textContent == '<') {
-                result.value= this.cutString(result.value)
-            
-            } else if (!isNaN(val.textContent) || val.textContent == '.') {
-                if (isNaN(result.value) || result.value == 0) {
-                    result.value = ''
+/*         switch (val.textContent) {
+            case 'C':
+                result.textContent = 0
+                this.reset(first,sec,sign)
+                break;
+            case '<':
+                result.textContent = this.cutString(result.textContent)
+                break
+            case '+': case '-': case 'x': case '\u00F7':
+                first = Number(result.textContent)
+                sign = val.textContent
+                result.textContent += val.textContent
+                break
+            case '+/-':
+                if (result.textContent > 0) {
+                    result.textContent = '-' + result.textContent
+                } else {
+                    result.textContent = Math.abs(result.textContent)
                 }
-                result.value += val.textContent
-
-            } else if (val.textContent !== '=') {
-                this.firstNum = Number(result.value)
-                this.sign = val.textContent
-                result.value = val.textContent
-
-            } else {
-                this.secNum = Number(result.value)
-                result.value = this.calculate(this.firstNum, this.secNum, this.sign)
+                break
+            case '.':
+                result.textContent += val.textContent
+                break
+            case '=':
+                sec = Number(result.textContent[result.textContent.length - 1])
+                result.textContent = calc(first,sec,sign)
                 this.reset()
-            }
-        })
+                break
+            default:
+                result.textContent = result.textContent == 0 ?
+                    result.textContent = val.textContent : result.textContent += val.textContent
+                break
+        } */
+
+
     }
 
     createCalc() {
-        let head = document.createElement("input");
-        head.setAttribute('id', 'result')
-        head.value = this.result
-        document.body.appendChild(head)
-
-        let table = document.createElement("table");
-        for (let i = 0; i < this.config.rows; i++) {
-            let tr = document.createElement("tr");
-            table.appendChild(tr);
-
-            for (data of this.data[i]) {
-                let td = document.createElement("td");
-                td.textContent = data
-                this.addEvent(td)
-                tr.appendChild(td);
+        let container = document.createElement("div");
+        container.setAttribute('id', 'container')
+        let head = document.createElement("div");
+        head.setAttribute('id', 'header')
+        let span = document.createElement("span");
+        span.textContent = this.result
+        head.appendChild(span)
+        container.appendChild(head)
+        let data1 = ['MC', 'MR', 'M+', 'M-', 'MS', 'M',]
+        let data2 = [
+            '%', 'CE', 'C', '<', //"\u232b"
+            '1/x', 'x2', 'x', '\u00F7',
+            '7', '8', '9', 'x',
+            '4', '5', '6', '-',
+            '1', '2', '3', '+',
+            '+/-', '0', '.', '='
+        ]
+        let wrap = document.createElement("div");
+        wrap.setAttribute('id', 'wrap-btns')
+        let wraperData1 = document.createElement("div");
+        wraperData1.classList.add('wrap-div-btns')
+        for (let d of data1) {
+            let btn = document.createElement("div");
+            btn.classList.add('div-btns')
+            if (d == 'M+' || d == 'M-' || d == 'MS') {
+                btn.classList.add('div-btns-bold')
             }
+            btn.textContent = d
+            btn.addEventListener('click', this.addEvent)
+            wraperData1.appendChild(btn)
+            head.appendChild(wraperData1)
         }
-        document.body.appendChild(table)
+        for (let d of data2) {
+            let btn = document.createElement("button");
+            if (!isNaN(d)) {
+                btn.classList.add('numbers')
+            }
+            if (d == '+/-' || d == '.') {
+                btn.classList.add('symbols')
+            }
+            if (d == '=') {
+                btn.classList.add('equal')
+            }
+            btn.textContent = d
+            btn.addEventListener('click', this.addEvent)
+            wrap.appendChild(btn)
+        }
+        container.appendChild(wrap)
+        document.body.appendChild(container)
     }
 }
 
-let data = [
-    ['%', 'M+', '<', '/'],
-    ['7', '8', '9', '*'],
-    ['4', '5', '6', '-'],
-    ['1', '2', '3', '+'],
-    ['.', '0', 'C', '='],
-
-]
-let tableConfig = {
-    'rows': 5,
-}
-
-let c = new Calculator(tableConfig, data)
+let c = new Calculator()
