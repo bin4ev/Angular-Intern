@@ -10,6 +10,7 @@ class Table {
     this.countPage = 1
     this.increaseData = true
     this.valueClass
+    this.lastPage = false
     this.createTable()
     this.pagination()
   }
@@ -33,6 +34,7 @@ class Table {
   createTableRows(table) {
     for (let i = 0; i < this.config.rows; i++) {
       let tr = document.createElement("tr");
+      tr.setAttribute('id', `${i}`)
       if (this.config.canSelect) {
         this.InitSelect(tr)
       }
@@ -67,10 +69,12 @@ class Table {
   }
 
   select(target, className) {
-    this.removeClass(className)
-    this.selected = target
-    if (className) {
-      this.selected.classList.add(className)
+    if (target) {
+      this.removeClass(className)
+      this.selected = target
+      if (className) {
+        this.selected.classList.add(className)
+      }
     }
   }
 
@@ -79,16 +83,14 @@ class Table {
       let parent = this.selected.parentNode
       let prevSel = this.selected.previousSibling
       let nextSel = this.selected.nextSibling
-      if (nextSel == parent.lastChild) {
 
-      }
       switch (e.key) {
         case 'ArrowUp':
           if (prevSel != parent.firstChild) {
             this.select(prevSel, className)
           }
           break;
-        case 'ArrowDown': //do for last node
+        case 'ArrowDown':
           this.select(nextSel, className)
           break;
         default:
@@ -109,18 +111,26 @@ class Table {
     })
   }
 
+  disableBtn(b) {
+    b.classList.add('disable')
+    b.disabled = true
+  }
+
+  enableBtn(b) {
+    b.disabled = false
+    b.classList.remove('disable')
+  }
+
   nextPage() {
     let btns = document.querySelectorAll('button')
-    if (this.end > this.length) {
-      let btn = btns[1]
-      btn.classList.add('disable')
-      btn.disabled = true
+    console.log(this.length);
+    if (this.lastPage) {
+      this.disableBtn(btns[1])
       return
-    }                               //do func
-    let btn = btns[0]
-    if (btn.disabled) {
-      btn.disabled = false
-      btn.classList.remove('disable')
+    }
+
+    if (btns[0].disabled) {
+      this.enableBtn(btns[0])
     }
     this.increaseData = true
     this.countPage++
@@ -131,16 +141,13 @@ class Table {
 
   prevPege() {
     let btns = document.querySelectorAll('button')
-    if (this.start <= 1) {
-      let btn = btns[0]
-      btn.classList.add('disable')
-      btn.disabled = true
+    if (this.countPage == 1) {
+      this.disableBtn(btns[0])
       return
-    }                                   //do func
+    }
 
     if (btns[1].disabled) {
-      btns[1].disabled = false
-      btns[1].classList.remove('disable')
+      this.enableBtn(btns[1])
     }
     this.increaseData = false
     this.countPage--
@@ -148,53 +155,87 @@ class Table {
     this.fillRows()
   }
 
-  formarNum(val) {
+  formatNum(val) {
+    return parseFloat(val)
+  }
 
+  int(val) {
+    return parseInt(val)
+  }
+
+  date(val) {
+    let date = new Date(val)
+    let month = date.toLocaleString('default', { month: 'long' });
+    let day = date.getDate()
+
+    return [day, month].join(' ')
   }
 
   formatValue(c, val) {
+    let res
+    let route = {
+      'num': this.formatNum(val),
+      'date': this.date(val),
+      'int': this.int(val)
+    }
+
     if (c.textFn) {
-      return c.textFn(val)
+      res = c.textFn(val)
     }
-
-    if (c.format && c.format == 'num') {
-      return this.formatNum(val)
+    if (c.format) {
+      res = route[c.format]
     }
-
-    return val || ''
+    return res 
   }
 
-  addValueClass(c, td, dataObj) {
-    let val = dataObj[c.property]
+  checkFormatCol(format, c, val) {
+    let res
+    res = Number.isInteger(val) ? format.int(val) : res = format.num(val)
+
+    if (c.property == 'price') {
+      res = format.usd(val)
+    }
+    return res 
+  }
+
+  addValueClass(c, td, val) {
     let valueClass = c.valueClass(val)
     if (valueClass) {
       td.classList.add(valueClass)
     } else {
-      td.classList.remove(this.valueClass) //clear all  add default
+      td.removeAttribute('class')
+      td.classList.add(c.cellClass)
     }
   }
 
   fill(data) {
     let tdArr = document.querySelectorAll('tr ~ tr')
-
     for (let i = 0; i < tdArr.length; i++) {
       let dataObj = data[i]
-      if(dataObj){
-        //fillEmpty
-      }
+      let row = tdArr[i].children
       if (dataObj && this.increaseData) {
         this.length++
       }
-      let row = tdArr[i].children
-
       for (let k = 0; k < row.length; k++) {
         let td = row[k]
-        let c = this.config.columns[k]
-        if (c.valueClass) {
-          this.addValueClass(c, td, dataObj)
+        if (!dataObj) {
+          td.textContent = ''
+          this.lastPage = true
+          continue
         }
+
+        this.lastPage = false
+        let c = this.config.columns[k]
         let value = dataObj[c.property]
-        td.textContent = this.formatValue(c, value)
+        if (c.valueClass) {
+          this.addValueClass(c, td, value)
+        }
+        let parsed = Number(value)
+        if (this.config.format && parsed) {
+          td.textContent = this.checkFormatCol(this.config.format, c, parsed)
+        } else {
+          td.textContent = this.formatValue(c, value)
+        }
       }
     }
 
@@ -219,9 +260,9 @@ class Table {
     let btnNext = document.createElement('button')
     btnPrev.textContent = '<'
     btnNext.textContent = '>'
-    
-    btnPrev.addEventListener('click', ()=>this.prevPege(this))
-    btnNext.addEventListener('click', ()=> this.nextPage(this))
+
+    btnPrev.addEventListener('click', () => this.prevPege(this))
+    btnNext.addEventListener('click', () => this.nextPage(this))
 
     window.addEventListener('keydown', (e) => {
       e.preventDefault()
@@ -237,12 +278,17 @@ class Table {
           this.end = this.config.rows
           this.countPage = 1
           this.increaseData = false
+          this.disableBtn(btnPrev)
+          this.enableBtn(btnNext)
           this.fillRows()
           break;
         case 'End':
           this.end = Math.ceil(this.length / this.config.rows) * this.config.rows
           this.start = this.end - this.config.rows
           this.countPage = Math.ceil(this.length / this.config.rows)
+          this.increaseData = false
+          this.disableBtn(btnNext)
+          this.enableBtn(btnPrev)
           this.fillRows()
           break;
         default:
@@ -264,6 +310,14 @@ let describeColumns = [
   {
     property: "number",
     name: "№",
+    headerClass: "bold",
+    cellClass: "left",
+    textFn: value => value.toUpperCase()
+  },
+  {
+    property: "date",
+    name: "Дата",
+    format: 'date',
     headerClass: "bold",
     cellClass: "left",
     textFn: value => value.toUpperCase()
@@ -321,6 +375,11 @@ let tableConfig = {
   'columns': describeColumns,
   'showHeader': true,
   'rows': 10,
+  'format': {
+    num: (n) => n.toFixed(2),
+    int: (n) => n.toFixed(0),
+    usd: (n) => `$${n.toFixed(2)}`,
+  },
   'canSelect': true,
   'selectedRowClass': 'selected-row',
   onselect: (data) => data.toUpperCase()

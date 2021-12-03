@@ -27,6 +27,9 @@ table {
 td {
   border: none;
 }
+td:empty::after{
+  content: "\00a0";
+}
 th,td {
   padding: 8px;
   text-align: center;
