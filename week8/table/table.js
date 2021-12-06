@@ -69,12 +69,10 @@ class Table {
   }
 
   select(target, className) {
-    if (target) {
-      this.removeClass(className)
-      this.selected = target
-      if (className) {
-        this.selected.classList.add(className)
-      }
+    this.removeClass(className)
+    this.selected = target
+    if (className) {
+      this.selected.classList.add(className)
     }
   }
 
@@ -91,7 +89,9 @@ class Table {
           }
           break;
         case 'ArrowDown':
-          this.select(nextSel, className)
+          if (nextSel) {
+            this.select(nextSel, className)
+          }
           break;
         default:
           break;
@@ -123,26 +123,24 @@ class Table {
 
   nextPage() {
     let btns = document.querySelectorAll('button')
-    console.log(this.length);
     if (this.lastPage) {
-      this.disableBtn(btns[1])
       return
     }
-
     if (btns[0].disabled) {
       this.enableBtn(btns[0])
     }
+
     this.increaseData = true
     this.countPage++
     this.start += this.config.rows
     this.end += this.config.rows
     this.fillRows()
+    this.removeClass(this.config.selectedRowClass)
   }
 
   prevPege() {
     let btns = document.querySelectorAll('button')
     if (this.countPage == 1) {
-      this.disableBtn(btns[0])
       return
     }
 
@@ -153,6 +151,8 @@ class Table {
     this.countPage--
     this.start -= this.config.rows, this.end -= this.config.rows
     this.fillRows()
+    this.removeClass(this.config.selectedRowClass)
+
   }
 
   formatNum(val) {
@@ -185,17 +185,7 @@ class Table {
     if (c.format) {
       res = route[c.format]
     }
-    return res 
-  }
-
-  checkFormatCol(format, c, val) {
-    let res
-    res = Number.isInteger(val) ? format.int(val) : res = format.num(val)
-
-    if (c.property == 'price') {
-      res = format.usd(val)
-    }
-    return res 
+    return res || val
   }
 
   addValueClass(c, td, val) {
@@ -230,9 +220,9 @@ class Table {
         if (c.valueClass) {
           this.addValueClass(c, td, value)
         }
-        let parsed = Number(value)
-        if (this.config.format && parsed) {
-          td.textContent = this.checkFormatCol(this.config.format, c, parsed)
+        if (this.config.format[c.format]) {
+          let formatFunc = this.config.format[c.format]
+          td.textContent = formatFunc(value)
         } else {
           td.textContent = this.formatValue(c, value)
         }
@@ -248,20 +238,31 @@ class Table {
       if (!(result instanceof Promise)) {
         result = Promise.resolve(result)
       }
+      let btns = document.querySelectorAll('button')
       result.then((data) => this.fill(data))
+        .then(() => {
+          if (this.lastPage) {
+            this.disableBtn(btns[1])
+          }
+          if (this.countPage == 1) {
+            this.disableBtn(btns[0])
+          }
+        })
     } else {
       let d = this.data.slice(this.start, this.end)
       this.fill(d)
     }
+
   }
 
   pagination() {
     let btnPrev = document.createElement('button')
+    this.disableBtn(btnPrev)
     let btnNext = document.createElement('button')
     btnPrev.textContent = '<'
     btnNext.textContent = '>'
 
-    btnPrev.addEventListener('click', () => this.prevPege(this))
+    btnPrev.addEventListener('click', this.prevPege.bind(this))
     btnNext.addEventListener('click', () => this.nextPage(this))
 
     window.addEventListener('keydown', (e) => {
@@ -303,6 +304,7 @@ class Table {
     btnWrap.appendChild(btnPrev)
     btnWrap.appendChild(btnNext)
     divWrap.appendChild(btnWrap)
+
   }
 }
 
@@ -356,7 +358,7 @@ let describeColumns = [
     property: "price",
     name: 'Цена',
     headerClass: 'italic',
-    format: 'num',
+    format: 'usd',
     cellClass: 'left',
     valueClass: val => val < 0 ? 'red' : undefined,
     textFn: value => value.toUpperCase()
@@ -378,7 +380,7 @@ let tableConfig = {
   'format': {
     num: (n) => n.toFixed(2),
     int: (n) => n.toFixed(0),
-    usd: (n) => `$${n.toFixed(2)}`,
+    usd: (n) => `$${(Number(n).toFixed(2))}`,
   },
   'canSelect': true,
   'selectedRowClass': 'selected-row',

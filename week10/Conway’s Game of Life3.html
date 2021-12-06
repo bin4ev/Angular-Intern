@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        td {
+            border: solid 1px grey;
+            width: 12px;
+            height: 12px;
+        }
+
+        .alive {
+            background-color: blue;
+        }
+
+        .dead {
+            background-color: transparent;
+        }
+    </style>
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="grid"></div>
+    <button id="next">Next generation</button>
+
+    <script>
+        let rows = 20, cols = 40
+
+        let grid = document.querySelector('#grid')
+        let tbl = document.createElement('table')
+        tbl.setAttribute('id', 'table')
+        for (let i = 0; i < rows; i++) {
+            let tr = document.createElement('tr')
+            for (let j = 0; j < cols; j++) {
+                let cell = document.createElement('td')
+                if (Math.random() < 0.8) {
+                    cell.setAttribute('class', 'dead')
+                } else {
+                    cell.setAttribute('class', 'alive')
+                }
+                tr.appendChild(cell)
+            }
+            tbl.appendChild(tr)
+        }
+        grid.appendChild(tbl)
+
+        
+
+
+
+
+    </script>
+</body>
+
+</html>

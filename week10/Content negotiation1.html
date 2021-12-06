@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<p></p>
+
+<body>
+    <script>
+        let info = document.querySelector('p')
+        let url = 'https://eloquentjavascript.net/author'
+
+
+        function getRequestText() {
+            fetch(url, { 'Accept': 'text/plain' })
+                .then(res => {
+                    res.headers.get('content-type');
+                    res.text()
+                })
+                .then(data => info.textContent = data)
+                .catch(err => info.textContent = err)
+
+        }
+
+        function getRequestJson() {
+            fetch(url, { 'Accept': 'text/plain' })
+                .then(res => {
+                    console.log(res.headers.get('content-type'));
+                    res.json()
+                })
+                .then(data => info.textContent = data)
+                .catch(err => info.textContent = err)
+
+        }
+
+        function getRequestHtml(params) {
+            fetch(url, { 'Accept': 'text/html' })
+                .then(res => {
+                    console.log(res.headers.get('content-type'));
+                })
+                .then(data => console.log(data))
+                .catch(err => console.log(err))
+        }
+
+        getRequestText()
+        getRequestJson()
+        getRequestHtml()
+    </script>
+</body>
+
+</html>
