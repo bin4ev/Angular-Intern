@@ -51,6 +51,17 @@ function timer() {
     display.addEventListener('keydown', validate)
 
  
+    function startEditDisplay(e) {
+        if (startBtn.textContent != 'Start') {
+            return
+        }
+
+        e.preventDefault()
+        hours.contentEditable = true
+        min.contentEditable = true
+        sec.contentEditable = true
+        sec.focus()
+    }
 
     function stopEditDisplay() {
         hours.contentEditable = false
