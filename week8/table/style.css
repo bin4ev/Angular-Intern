@@ -39,9 +39,17 @@ th {
   background-color: #333333;
 }
 tr {
+  max-height: 30px; 
   border-bottom: 1px solid grey; 
   background-color: #121212;
   cursor: pointer;
+}
+img {
+  max-height: 27px;
+  width: 112px;
+  object-fit: contain;
+  margin-top: 5px;
+  margin-left: 70px;
 }
 .btn-wrap {
   margin-top: 22px;

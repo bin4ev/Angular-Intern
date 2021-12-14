@@ -1,0 +1,44 @@
+body{
+    box-sizing: border-box; 
+}
+.main, .edit-wraper {
+    display: flex;
+    align-items: center;
+}
+section {
+    font-size: 170px;
+}
+#showTimer {
+    font-size: 25px;
+    color: #45454B;
+    margin-right: 10px;
+}
+#edit:active {
+    color: grey
+}
+#edit {
+    font-size: 19px;
+    color: blue;
+    cursor: pointer;
+}
+.btn {
+    width: 97px;
+    font-size: 18px;
+    margin-left: 20px;
+    padding: 38px 22px;
+    border-radius: 92px;
+    background-color: #19A69D;
+    color: whitesmoke;
+    border: none;
+}
+div button:nth-child(3){
+    background-color: blue;
+}
+button:disabled {
+    background-color: white !important;
+    color: #DFDFDF;
+    border: solid 1px #DFDFDF
+}
+.active {
+    background-color: red;
+}

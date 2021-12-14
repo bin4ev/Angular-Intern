@@ -7,20 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         .trail {
-            /* className for the trail elements */
             position: absolute;
             height: 6px;
             width: 6px;
             border-radius: 3px;
             background: teal;
-
-
         }
-
         .fade {
             opacity: 0.1;
         }
-
         body {
             height: 300px;
         }
@@ -31,7 +26,7 @@
 <body>
 
     <script>
-        let TOTAL_EL = 15
+        let TOTAL_EL = 20
         let elements = []
         for (let i = 0; i < TOTAL_EL; i++) {
             let el = document.createElement('div')
@@ -39,36 +34,24 @@
             document.body.appendChild(el)
             elements.push(el)
         }
-
         let index = 0
         let hideEL
-        let flag = false
 
         function trail(e) {
             clearTimeout(hideEL);
-            if (flag) {
-                elements.map(dot => dot.style.display = 'inline-block')
-                flag = false
-            }
-
             let curr = elements[index]
             curr.style.left = (e.pageX) + 'px'
             curr.style.top = (e.pageY) + 'px'
+            curr.style.display = 'inline-block'
             hideEL = setTimeout(() => {
                 elements.map(dot => {
-                    flag = true
                     dot.style.display = 'none'
                 })
             }, 1000);
-
             index = (index + 1) % elements.length
         }
 
         window.addEventListener('mousemove', trail)
-
-
-
-
     </script>
 </body>
 

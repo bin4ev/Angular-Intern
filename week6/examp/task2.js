@@ -19,7 +19,8 @@ class Average {
 
     nextFull(digit) {
         this.idx = this.idx % this.n
-        this.sum = this.container[this.idx] + digit
+        this.sum-= this.container[this.idx]
+        this.sum+= digit
         this.container[this.idx] = digit
         this.idx++
         

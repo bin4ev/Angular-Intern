@@ -183,7 +183,7 @@ class Table {
       res = c.textFn(val)
     }
     if (c.format) {
-      res = route[c.format]
+      res = route[c.format] || c.format(val)
     }
     return res || val
   }
@@ -202,7 +202,7 @@ class Table {
     let tdArr = document.querySelectorAll('tr ~ tr')
     for (let i = 0; i < tdArr.length; i++) {
       let dataObj = data[i]
-      let row = tdArr[i].children
+      let row = Array.from(tdArr[i].children)
       if (dataObj && this.increaseData) {
         this.length++
       }
@@ -220,9 +220,9 @@ class Table {
         if (c.valueClass) {
           this.addValueClass(c, td, value)
         }
-        if (this.config.format[c.format]) {
-          let formatFunc = this.config.format[c.format]
-          td.textContent = formatFunc(value)
+        if (this.config.format[c.property]) {
+          let formatFunc = this.config.format[c.property]
+          td.innerHTML = formatFunc(this.formatValue(c, value))
         } else {
           td.textContent = this.formatValue(c, value)
         }
@@ -234,7 +234,7 @@ class Table {
 
   fillRows() {
     if (typeof this.data == 'function') {
-      let result = this.data(this.start, this.end)
+      let result = this.data(this.start, /* this.end */this.config.rows)
       if (!(result instanceof Promise)) {
         result = Promise.resolve(result)
       }
@@ -310,66 +310,34 @@ class Table {
 
 let describeColumns = [
   {
-    property: "number",
-    name: "№",
+    property: "_id",
+    name: "ID",
+    headerClass: "bold",
+    cellClass: "left",
+    textFn: value => console.log(value)
+  },
+  {
+    property: "name",
+    name: "Име",
     headerClass: "bold",
     cellClass: "left",
     textFn: value => value.toUpperCase()
   },
   {
-    property: "date",
-    name: "Дата",
-    format: 'date',
+    property: "trips",
+    name: "Пътувания",
     headerClass: "bold",
     cellClass: "left",
-    textFn: value => value.toUpperCase()
+    valueClass: val => val < 50 ? 'red' : undefined,
+    textFn: value => console.log(value)
   },
   {
-    property: "unit",
-    name: "Стока",
-    headerClass: "bold",
-    cellClass: "left",
-    textFn: value => value.toUpperCase()
-  },
-  {
-    property: "code",
-    name: 'Код  ',
+    property: "airline",
+    name: 'Лого',
     headerClass: 'italic',
     cellClass: 'left',
-    textFn: value => value.toUpperCase()
-  },
-  {
-    property: "weight",
-    name: 'Везна',
-    headerClass: 'italic',
-    cellClass: 'left',
-    valueClass: val => val < 0 ? 'red' : undefined,
-    textFn: value => value.toUpperCase()
-  },
-  {
-    property: "time",
-    name: 'час',
-    headerClass: 'italic',
-    cellClass: 'left',
-    valueClass: val => val < 0 ? 'red' : undefined,
-    textFn: value => value.toUpperCase()
-  },
-  {
-    property: "price",
-    name: 'Цена',
-    headerClass: 'italic',
-    format: 'usd',
-    cellClass: 'left',
-    valueClass: val => val < 0 ? 'red' : undefined,
-    textFn: value => value.toUpperCase()
-  },
-  {
-    property: "warehause",
-    name: 'Склад',
-    headerClass: 'italic',
-    cellClass: 'left',
-    valueClass: val => val < 0 ? 'red' : undefined,
-    textFn: value => value.toUpperCase()
+    format: (valueArr) => valueArr[0].logo,
+    textFn: value => console.log(value)
   }
 ];
 
@@ -378,39 +346,19 @@ let tableConfig = {
   'showHeader': true,
   'rows': 10,
   'format': {
-    num: (n) => n.toFixed(2),
-    int: (n) => n.toFixed(0),
-    usd: (n) => `$${(Number(n).toFixed(2))}`,
+    airline: (src) => `<img src=${src}>`,
   },
   'canSelect': true,
   'selectedRowClass': 'selected-row',
   onselect: (data) => data.toUpperCase()
 }
 
+function dataFunc(pos, count) {
+  return fetch(`https://api.instantwebtools.net/v1/passenger?page=${pos / count}&size=${count}`)
+    .then(res => res.json())
+    .then(r => r.data)
+}
 
-fetch('./data1.json')
-  .then(res => res.json())
-  .then(data => {
-    function dataFunc(pos, count) {
-      let d = data.slice(pos, pos + count)
-      /*  return Promise.resolve(d) */
-      return d
-    }
-
-    let t = new Table(tableConfig, dataFunc)
-  })
-  .catch(e => console.log(e))
+let t = new Table(tableConfig, dataFunc)
 
 
-
-
-
-
-
-
-
-
-
-
-
-/*     this.totalRows.textContent = `${this.start + 1} - ${this.end} of ${this.length}` */

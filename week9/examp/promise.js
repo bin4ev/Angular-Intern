@@ -1,49 +1,65 @@
 class Future {
-    constructor(execFn) {
-        this.value = ''
-        this.status
-        execFn(this.resolve.bind(this), this.reject.bind(this))
+    constructor(init) {
+        init(this.resolve.bind(this), this.reject.bind(this))
     }
 
-    resolve(val) {
-        this.status = 'done'
-        this.value = val
+    resolve(value) {
+        if (this.done) {
+            return
+        }
+
+        if (this.saveResponse) {
+            this.saveResponse(value)
+            return
+        }
+
+        this.done = true
+        this.result = value
     }
 
-    reject(err) {
-        this.status = 'rejected'
-        this.value = err
+    reject(error) {
+        if (this.done) {
+            return
+        }
+
+        if (this.saveReject) {
+            this.saveReject(error)
+            return
+        }
+
+        this.done = true
+        this.error = error
     }
 
-    then(res, rej) {
-        switch (this.status) {
-            case 'done':
-                res(this.value)
-                break;
-            case 'rejected':
-                rej(this.value)
-                break;
-            default:
-                break;
+    then(onSuccess, onError) {
+        if (this.result) {
+            onSuccess(this.result)
+        } else if (this.error) {
+            onError(this.error)
+        } else {
+            this.saveResponse = onSuccess
+            this.saveReject = onError
         }
     }
 }
-
 
 function divide(x, y) {
     return new Future((resolve, reject) => {
         if (y === 0) {
-            reject("division by zero")
+            setTimeout(() => {
+                reject("division by zero")
+            }, 2000)
             return
         }
-        var result = x / y
-        resolve(result)
+
+        setTimeout(() => {
+            var result = x / y
+            resolve(result)
+        }, 2000)
     })
 }
 
-var p = divide(25, 5).then(
+var p = divide(25, 0).then(
     value => console.log("result", value),
     error => console.error(error)
 )
-
-

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .active {
+            color: blue;
+        }
+    </style>
+    <title>Document</title>
+</head>
+
+<body>
+    
+    <tab-panel>
+        <div data-tabname="one">Tab one</div>
+        <div data-tabname="two">Tab two</div>
+        <div data-tabname="three">Tab three</div>
+    </tab-panel>
+
+    <script>
+        function asTabs(node) {
+            let active
+            let activeBtn
+            let map = new Map()
+            let arrNodes = Array.from(node.children)
+
+            for (let tab of arrNodes) {
+                tab.style.display = 'none'
+                let btn = document.createElement('button')
+                btn.textContent = tab.getAttribute('data-tabname')
+                btn.addEventListener('click', showContent)
+                map.set(btn.textContent, tab) //arrbtn
+                document.body.insertBefore(btn, node)
+            }
+            let btnOne = document.querySelector('button') //map
+            btnOne.click()
+
+            function showContent(e) {
+                if (active) {
+                    activeBtn.classList.remove('active')
+                    active.style.display = 'none'
+                }
+                e.target.className = 'active'
+                let target = e.target.textContent
+                map.get(target).style.display = 'inline-block'
+                active = map.get(target)
+                activeBtn = e.target
+            }
+        }
+
+        asTabs(document.querySelector("tab-panel"));
+    </script>
+</body>
+
+</html>

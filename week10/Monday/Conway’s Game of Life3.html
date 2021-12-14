@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        td {
+            border: solid 1px grey;
+            width: 2px;
+            height: 2px;
+        }
+
+        .alive {
+            background-color: rgb(72, 193, 230);
+        }
+
+        .dead {
+            background-color: transparent;
+        }
+    </style>
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="grid"></div>
+    <button id="next">Next generation</button>
+    <button id="auto">Auto</button>
+    <script>
+        class Matrix {
+            constructor(width, height, element = (x, y) => undefined) {
+                this.width = width;
+                this.height = height;
+                this.content = [];
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        this.content[y * width + x] = element(x, y);
+                    }
+                }
+            }
+
+            get(x, y) {
+                return this.content[y * this.width + x];
+            }
+            set(x, y, value) {
+                this.content[y * this.width + x] = value;
+            }
+        }
+
+        function countNeighbors(row, col) {
+            let count = 0
+            // Check top 
+            if (row - 1 >= 0) {
+                if (currGrid.get(row - 1, col) == ALIVE) {
+                    count++
+                }
+            }
+            //Check up left 
+            if (row - 1 >= 0 && col - 1 >= 0) {
+                if (currGrid.get(row - 1, col - 1) == ALIVE) {
+                    count++
+                }
+            }
+            //check check up right
+            if (row - 1 >= 0 && col + 1 < cols) {
+                if (currGrid.get(row - 1, col + 1) == ALIVE) {
+                    count++
+                }
+            }
+            //Check left 
+            if (col - 1 >= 0) {
+                if (currGrid.get(row, col - 1) == ALIVE) {
+                    count++
+                }
+            }
+            if (col + 1 <= cols) {
+                //Check right neighbor
+                if (currGrid.get(row, col + 1) == ALIVE) {
+                    count++
+                }
+            }
+            if (row + 1 < rows && col - 1 >= 0) {
+                //Check bottom left neighbor
+                if (currGrid.get(row + 1, col - 1) == ALIVE) {
+                    count++
+                }
+            }
+            if (row + 1 < rows && col + 1 < cols) {
+                //Check bottom right neighbor
+                if (currGrid.get(row + 1, col + 1) == ALIVE) {
+                    count++
+                }
+            }
+            if (row + 1 < rows) {
+                //Check bottom neighbor
+                if (currGrid.get(row + 1, col) == ALIVE) {
+                    count++
+                }
+            }
+
+            return count
+        }
+
+        function changeClass(e) {
+            let cell = e.target
+            cell.isLive = !cell.isLive 
+            cell.className = cell.isLive ? 'dead' : 'alive' // status bool
+            currGrid.set(cell.x, cell.y, status)
+        }
+
+        function updateGrid(nextGrid) {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    let cell = document.getElementById(`${i}-${j}`)
+                    let status = nextGrid.get(i, j) == 0 ? 'dead' : 'alive'
+                    cell.className = status
+                }
+            }
+            currGrid = nextGrid
+        }
+
+        function createNextGen() {
+            let nextGrid = new Matrix(rows, cols)
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    let liveCells = countNeighbors(i, j)
+                    if (currGrid.get(i, j) == ALIVE) {
+                        if (liveCells < 2) {
+                            nextGrid.set(i, j, 0)
+                        } else if (liveCells == 2 || liveCells == 3) {
+                            nextGrid.set(i, j, 1)
+                        } else if (liveCells > 3) {
+                            nextGrid.set(i, j, 0)
+                        }
+                    } else {
+                        if (liveCells == 3) {
+                            nextGrid.set(i, j, 1)
+                        }
+                    }
+                }
+            }
+            updateGrid(nextGrid)
+        }
+
+        function autoRun(e) {
+            let status = e.target.textContent == 'Auto' ? 'Stop' : 'Auto'
+            e.target.textContent = status
+            let inter = setInterval(() => {
+                if (e.target.textContent == 'Auto') {
+                    clearInterval(inter)
+                }
+                createNextGen()
+            }, 1000)
+        }
+
+        function createGrid() {
+            for (let i = 0; i < rows; i++) {
+                let tr = document.createElement('tr')
+                for (let j = 0; j < cols; j++) {
+                    let cell = document.createElement('td')
+                    cell.className = Math.random() < 0.2 ? 'alive' : 'dead'
+                    cell.setAttribute('id', `${i}-${j}`)
+                    cell.x = i
+                    cell.y = j
+                    let status = cell.classList == 'alive' ? ALIVE : DEAD
+                    currGrid.set(i, j, status)
+                    tr.appendChild(cell)
+                }
+                tbl.appendChild(tr)
+            }
+            tbl.addEventListener('click', changeClass)
+        }
+
+
+        let ALIVE = 1, DEAD = 0
+        let rows = 40, cols = 80
+        let currGrid = new Matrix(rows, cols)
+        let nextGrid = []
+        let grid = document.querySelector('#grid')
+        let tbl = document.createElement('table')
+        tbl.setAttribute('id', 'table')
+        grid.appendChild(tbl)
+        createGrid()
+        let btn = document.querySelectorAll('button')
+        btn[0].addEventListener('click', createNextGen)
+        btn[1].addEventListener('click', autoRun)
+    </script>
+</body>
+
+</html>
