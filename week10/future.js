@@ -86,23 +86,23 @@ class Future {
         })
     }
 
-    static any(iterable) { //iterable ; err position
-        let errArr
+    static any(promises) {
+        if (!(promises instanceof Array)) {
+            promises = [...promises]
+        }
+
         return new Future((res, rej) => {
-            let i = 0, count = 0
-            for (let future of iterable) {
-                future.then(res)
+            let errArr = []
+            let result=[]
+            for (let i = 0; i < promises.length; i++) {
+                let j = i
+                promises[i].then(res => result[j] = res)
                     .catch(err => {
-                        count++
-                        if (errArr) {
-                            errArr = []
-                        }
-                        errArr[i] = err
-                        if (count == i) {
+                        errArr.push(err)
+                        if (errArr.length == promises.length) {
                             rej(errArr)
                         }
                     })
-                i++
             }
         })
     }
