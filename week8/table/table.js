@@ -310,8 +310,8 @@ class Table {
 
 let describeColumns = [
   {
-    property: "_id",
-    name: "ID",
+    property: "city",
+    name: "Град",
     headerClass: "bold",
     cellClass: "left",
     textFn: value => console.log(value)
@@ -324,19 +324,17 @@ let describeColumns = [
     textFn: value => value.toUpperCase()
   },
   {
-    property: "trips",
-    name: "Пътувания",
+    property: "has-certificate",
+    name: "Сертификат",
+    headerClass: "bold",
+    cellClass: "left",
+  },
+  {
+    property: "age",
+    name: "Възраст",
     headerClass: "bold",
     cellClass: "left",
     valueClass: val => val < 50 ? 'red' : undefined,
-    textFn: value => console.log(value)
-  },
-  {
-    property: "airline",
-    name: 'Лого',
-    headerClass: 'italic',
-    cellClass: 'left',
-    format: (valueArr) => valueArr[0].logo,
     textFn: value => console.log(value)
   }
 ];
@@ -354,9 +352,9 @@ let tableConfig = {
 }
 
 function dataFunc(pos, count) {
-  return fetch(`https://api.instantwebtools.net/v1/passenger?page=${pos / count}&size=${count}`)
+  return fetch(`http://localhost:8000/users?start=${pos / count}&end=${count}`)
     .then(res => res.json())
-    .then(r => r.data)
+    .then(r => r)
 }
 
 let t = new Table(tableConfig, dataFunc)

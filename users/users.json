@@ -1,0 +1,93 @@
+[
+  {
+    "id": "1",
+    "name": "Ivan",
+    "age": "25",
+    "city": "Burgas",
+    "has-certificate": "true"
+  },
+  {
+    "id": "2",
+    "name": "Georgi",
+    "age": "20",
+    "city": "Sofia",
+    "has-certificate": "true"
+  },
+  {
+    "id": "3",
+    "name": "Danail",
+    "age": "29",
+    "city": "Plovdiv",
+    "has-certificate": "false"
+  },
+  {
+    "id": "4",
+    "name": "Stamat",
+    "age": "30",
+    "city": "Varna",
+    "has-certificate": "true"
+  },
+  {
+    "id": "5",
+    "name": "Grigorii",
+    "age": "52",
+    "city": "Vidin",
+    "has-certificate": "true"
+  },
+  {
+    "id": "6",
+    "name": "Pencho",
+    "age": "80",
+    "city": "Vratsa",
+    "has-certificate": "true"
+  },
+  {
+    "id": "7",
+    "name": "Dimitur",
+    "age": "28",
+    "city": "Sofia",
+    "has-certificate": "true"
+  },
+  {
+    "id": "8",
+    "name": "Lubo",
+    "age": "54",
+    "city": "Plovdiv",
+    "has-certificate": "false"
+  },
+  {
+    "id": "9",
+    "name": "Ivo",
+    "age": "40",
+    "city": "Varna",
+    "has-certificate": "true"
+  },
+  {
+    "id": "10",
+    "name": "Potar",
+    "age": "52",
+    "city": "Vidin",
+    "has-certificate": "true"
+  },
+  {
+    "id": "11",
+    "name": "Tihomir",
+    "age": "25",
+    "city": "Burgas",
+    "has-certificate": "true"
+  },
+  {
+    "id": "12",
+    "name": "Ivaylo",
+    "age": "20",
+    "city": "Sofia",
+    "has-certificate": "true"
+  },
+  {
+    "id": "13",
+    "name": "Danail",
+    "age": "29",
+    "city": "Plovdiv",
+    "has-certificate": "false"
+  }
+]

@@ -1,32 +1,29 @@
-const { createReadStream, createWriteStream } = require("fs")
-const lineReader = require('line-reader');
+import { createReadStream } from "fs"
 
 async function* readLine(readStream) {
+    let curr = ''
+    for await (let chunk of readStream) {
+        let startCutIndex = 0
+        for (let i = 0; i < chunk.length; i++) {
+            if (chunk[i] != '\n') {
+                continue
+            }
 
-    for await (chunk of readStream){
-        yield chunk
+            yield curr + chunk.slice(startCutIndex, i)
+            curr = ''
+            startCutIndex = i + 1
+        }
+        curr += chunk.slice(startCutIndex)
     }
-
-
-
-
-
+    yield curr
 }
 
-
-let readStream = createReadStream('./public/data1.json', { encoding: 'utf-8' })
+let readStream = createReadStream('./public/data1.json', "utf-8")
 let lines = readLine(readStream)
-
 let lineNum = 1;
-
 (async function () {
     for await (let line of lines) {
         lineNum++;
         console.log(`${lineNum}-${line}`);
     }
 })()
-/* for (let line of lines) {
-    lineNum++;
-    console.log(`${lineNum}-${line}`);
-}
- */

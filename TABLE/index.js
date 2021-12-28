@@ -356,12 +356,11 @@ let tableConfig = {
 }
 
 function dataFunc(pos, count) {
-  return fetch(`https://api.instantwebtools.net/v1/passenger?page=${pos / count}&size=${count}`)
+  return fetch(`http://localhost:8000/users?start=${pos / count}&end=${count}`)
     .then(res => res.json())
-    .then(r =>console.log(r.data[0]))
+    .then(r =>console.log(r))
 }
 dataFunc(0,10)
-/* 
-let t = new Table(tableConfig, dataFunc) */
+let t = new Table(tableConfig, dataFunc) 
 
 

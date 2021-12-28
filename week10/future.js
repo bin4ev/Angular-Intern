@@ -92,16 +92,14 @@ class Future {
         }
 
         return new Future((res, rej) => {
-            let errArr = []
+            
             let result=[]
             for (let i = 0; i < promises.length; i++) {
                 let j = i
-                promises[i].then(res => result[j] = res)
+                promises[i].then()
                     .catch(err => {
-                        errArr.push(err)
-                        if (errArr.length == promises.length) {
-                            rej(errArr)
-                        }
+                        result[j] = err
+                  
                     })
             }
         })

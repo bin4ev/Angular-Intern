@@ -1,101 +1,104 @@
 const { createReadStream, readdirSync, statSync } = require("fs")
-const lineReader = require('line-reader');
-const path = require('path');
-const wildcard = require('wildcard');
+const lineReader = require('line-reader')
+const path = require('path')
+const wildcard = require('wildcard')
+const minimist = require('minimist')
 
-function printMachedLine(readStream, patern) {
+function readLineNumber(readStream) {
+    let count = 0
+    lineReader.eachLine(readStream, (line, last) => {
+        count++
+        if (!last && line.match(patern) != null) {
+            console.log(`${count}: ${line}`);
+        }
+    })
+}
+
+function printName(readStream, pathFile) {
+    lineReader.eachLine(readStream, (line) => {
+        if (line.match(patern) != null) {
+            console.log(path.basename(pathFile));
+            return false
+        }
+    })
+}
+
+function readMatchLine(line) {
     lineReader.eachLine(readStream, (line) => {
         if (line.match(patern) != null) {
             console.log(line);
         }
     })
 }
-function grep(command, patern, filePath) {
-    let stats
-    try {
-        stats = statSync(filePath);
-    } catch (error) {
-        console.log(error)
-    }
 
-    if (!stats.isDirectory()) {
-        let readStream = createReadStream(path.resolve(filePath), { encoding: 'utf-8' })
-        checkComand(command, readStream, filePath, patern)
-        return
-    }
-
+function scanFolder(command, filePath) {
     let files = readdirSync(filePath)
     for (let file of files) {
         let absPath = path.resolve(`${filePath}/${file}`)
         let stats = statSync(absPath);
         if (stats.isDirectory()) {
-            grep(command, patern, absPath)
+            scanFolder(command, absPath)
             continue
         }
 
-        let readStream = createReadStream(absPath, { encoding: 'utf-8' })
-        checkComand(command, readStream, absPath, patern)
-    }
-
-}
-
-function checkComand(command, readStream, pathFile, patern) {
-    switch (command) {
-        case '-n':
-            let count = 0
-            lineReader.eachLine(readStream, (line, last) => {
-                count++
-                if (!last && line.match(patern) != null) {
-                    console.log(count);
-                }
-            })
-            break;
-        case '-l':
-            lineReader.eachLine(readStream, (line) => {
-                if (line.match(patern) != null) {
-                    console.log(path.basename(pathFile));
-                    return false
-                }
-            })
-            break
-        case '-i':
-            printMachedLine(readStream, patern)
-            break;
-        default:
-            printMachedLine(readStream, patern)
-            break;
+        grep(command, absPath)
     }
 }
 
-let args = process.argv.slice(2);
-let command = args[0]
-let patern = RegExp(args[1])
-if (command == '-i') {
-    patern = RegExp(args[0], 'i')
+commandRoute = {
+    'n': readLineNumber,
+    'l': printName,
+    'i': readMatchLine
 }
-let baseDir = path.basename(process.cwd())
-let files = args.slice(2)
+
+function grep(command, filePath) {
+    let readStream = createReadStream(path.resolve(filePath), { encoding: 'utf-8' })
+    let commandFunc = commandRoute[command] || readMatchLine
+    commandFunc(readStream, filePath)
+}
+
+let argv = minimist(process.argv.slice(2))
+let command = argv['c']
+let patern = argv['p']
+let files = argv['_']
+if (command == 'i') {
+    patern = RegExp(patern, 'i')
+}
+let baseDirPath = process.cwd()
+let baseDir = path.basename(baseDirPath)
+if (command == 'r' || !files) {
+    scanFolder(command, baseDirPath)
+    return
+}
+
 for (let file of files) {
     if (baseDir == file) {
-        grep(command, patern, file)
+        grep(command, file)
         continue
     }
-    let iter = scan(process.cwd(), file)
-    for (let i of iter) {
-        grep(command, patern, i)
-    }
+    searchRecur(baseDirPath, file)
+}
 
+function searchRecur(baseDirPath, file) {
+    let iter = scan(baseDirPath, file)
+    for (let { pathFile, stats } of iter) {
+        if (stats.isDirectory()) {
+            scanFolder(command, pathFile, stats)
+        } else {
+            grep(command, pathFile)
+        }
+    }
 }
 
 function* scan(rootPath, searchFile,) {
     let files = readdirSync(path.resolve(rootPath))
     for (let file of files) {
         let pathFile = path.resolve(`${rootPath}/${file}`)
+        let stats = statSync(pathFile);
         if (wildcard(searchFile, file)) {
-            yield pathFile
+            yield { pathFile, stats }
         }
 
-        let stats = statSync(pathFile);
         if (stats.isDirectory()) {
             yield* scan(pathFile, searchFile)
         }
